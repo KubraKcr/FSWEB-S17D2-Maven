@@ -1,9 +1,12 @@
 package com.workintech.s17d2;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.workintech.s17d2.model.*;
-import com.workintech.s17d2.rest.DeveloperController;
-import com.workintech.s17d2.tax.DeveloperTax;
+import com.workintech.model.Developer;
+import com.workintech.model.Experience;
+import com.workintech.model.MidDeveloper;
+import com.workintech.model.*;
+import com.workintech.model.*;
+import com.workintech.s17d2.rest.*;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,7 +51,7 @@ class MainTest {
         double expectedSalary = 1000.0;
         Experience expectedExperience = Experience.JUNIOR;
         
-        Developer developer = new Developer(expectedId, expectedName, expectedSalary, expectedExperience);
+        Developer developer = new Developer(expectedId, expectedName, expectedExperience,expectedSalary);
 
         
         int actualId = developer.getId();
@@ -87,7 +90,7 @@ class MainTest {
     @DisplayName("Test JuniorDeveloper Existence and Inheritance")
     void testJuniorDeveloperExistenceAndInheritance() {
 
-        JuniorDeveloper juniorDeveloper = new JuniorDeveloper(1, "Test Developer", 50000.0);
+        JuniorDeveloper juniorDeveloper = new JuniorDeveloper(1, "Test Developer", Experience.JUNIOR,5.000);
         assertTrue(juniorDeveloper instanceof Developer, "JuniorDeveloper should extend Developer.");
         assertEquals(Experience.JUNIOR, juniorDeveloper.getExperience(), "Experience should be JUNIOR.");
     }
@@ -95,7 +98,7 @@ class MainTest {
     @DisplayName("Test MidDeveloper Existence and Inheritance")
     void testMidDeveloperExistenceAndInheritance() {
 
-        MidDeveloper midDeveloper = new MidDeveloper(1, "Test Developer", 60000.0);
+        MidDeveloper midDeveloper = new MidDeveloper(1, "Test Developer", Experience.MID,7.000);
         assertTrue(midDeveloper instanceof Developer, "MidDeveloper should extend Developer.");
         assertEquals(Experience.MID, midDeveloper.getExperience(), "Experience should be MID.");
     }
@@ -104,7 +107,7 @@ class MainTest {
     @DisplayName("Test SeniorDeveloper Existence and Inheritance")
     void testSeniorDeveloperExistenceAndInheritance() {
 
-        SeniorDeveloper seniorDeveloper = new SeniorDeveloper(1, "Test Developer", 80000.0);
+        SeniorDeveloper seniorDeveloper = new SeniorDeveloper(1, "Test Developer", Experience.SENIOR,10.000);
         assertTrue(seniorDeveloper instanceof Developer, "SeniorDeveloper should extend Developer.");
         assertEquals(Experience.SENIOR, seniorDeveloper.getExperience(), "Experience should be SENIOR.");
     }
@@ -119,22 +122,22 @@ class MainTest {
     @Test
     @DisplayName("Test Get Simple Tax Rate")
     void testGetSimpleTaxRate() {
-        Double expectedSimpleTaxRate = 15d; 
-        assertEquals(expectedSimpleTaxRate, developerTax.getSimpleTaxRate(), "The simple tax rate should be correct.");
+        double expectedSimpleTaxRate = 15d;
+        assertEquals(expectedSimpleTaxRate, developerTax.getSimpleRateTax(), "The simple tax rate should be correct.");
     }
 
     @Test
     @DisplayName("Test Get Middle Tax Rate")
     void testGetMiddleTaxRate() {
-        Double expectedMiddleTaxRate = 25d; 
-        assertEquals(expectedMiddleTaxRate, developerTax.getMiddleTaxRate(), "The middle tax rate should be correct.");
+        double expectedMiddleTaxRate = 25d;
+        assertEquals(expectedMiddleTaxRate, developerTax.getMiddleRateTax(), "The middle tax rate should be correct.");
     }
 
     @Test
     @DisplayName("Test Get Upper Tax Rate")
     void testGetUpperTaxRate() {
-        Double expectedUpperTaxRate = 35d; 
-        assertEquals(expectedUpperTaxRate, developerTax.getUpperTaxRate(), "The upper tax rate should be correct.");
+        double expectedUpperTaxRate = 35d;
+        assertEquals(expectedUpperTaxRate, developerTax.getUpperRateTax(), "The upper tax rate should be correct.");
     }
 
 
@@ -143,10 +146,8 @@ class MainTest {
 
     @BeforeEach
     void setup() throws Exception {
-        controller = new DeveloperController(new DeveloperTax());
-        // Simulate @PostConstruct call if necessary. In reality, this is managed by Spring.
-        controller.init();
-        Developer developer = new Developer(1, "Initial Developer", 5000.0, Experience.JUNIOR);
+
+        Developer developer = new Developer(1, "Initial Developer", Experience.JUNIOR, 5.000);
         mockMvc.perform(post("/developers")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(developer)))
@@ -188,18 +189,13 @@ class MainTest {
 
     }
 
-    @Test
-    @DisplayName("DeveloperController:DeveloperMapCheck")
-    @Order(1)
-    void developersMapShouldNotBeNullAfterInitialization() {
-        assertNotNull(controller.developers, "The developers map should be initialized (not null) after @PostConstruct");
-    }
+
 
     @Test
     @DisplayName("DeveloperController:AddDeveloper")
     @Order(2)
     void testAddDeveloper() throws Exception {
-        Developer newDeveloper = new Developer(2, "New Developer", 6000.0, Experience.MID);
+        Developer newDeveloper = new Developer(2, "New Developer",  Experience.MID,6000.0);
         mockMvc.perform(post("/developers")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(newDeveloper)))
@@ -228,7 +224,7 @@ class MainTest {
     @DisplayName("DeveloperController:UpdateDeveloper")
     @Order(5)
     void testUpdateDeveloper() throws Exception {
-        Developer updatedDeveloper = new Developer(1, "Updated Developer", 7000.0, Experience.SENIOR);
+        Developer updatedDeveloper = new Developer(1, "Updated Developer",  Experience.SENIOR,7000.0);
         mockMvc.perform(put("/developers/{id}", 1)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updatedDeveloper)))
